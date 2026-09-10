@@ -1,0 +1,67 @@
+package br.com.matheus.orcafacil.domain.customer;
+
+import br.com.matheus.orcafacil.domain.business.Business;
+import br.com.matheus.orcafacil.domain.quote.Quote;
+import br.com.matheus.orcafacil.domain.shared.Address;
+import br.com.matheus.orcafacil.domain.shared.BaseEntity;
+import br.com.matheus.orcafacil.domain.shared.PersonType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(
+        name = "customers",
+        schema = "app",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_customers_business_tax_id",
+                columnNames = {"business_id", "tax_id"}
+        )
+)
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Customer extends BaseEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "person_type", nullable = false, length = 20)
+    private PersonType personType;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(name = "tax_id", length = 14)
+    private String taxId;
+
+    private String email;
+
+    private String phone;
+
+    @Embedded
+    private Address address;
+
+    private String notes;
+
+    @OneToMany(mappedBy = "customer")
+    @Setter(AccessLevel.NONE)
+    private List<Quote> quotes = new ArrayList<>();
+}

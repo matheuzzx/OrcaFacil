@@ -70,4 +70,24 @@ public class Business extends BaseEntity {
     @OneToMany(mappedBy = "business")
     @Setter(AccessLevel.NONE)
     private List<Quote> quotes = new ArrayList<>();
+
+    public Business(
+            PersonType personType,
+            String displayName,
+            String legalName,
+            String taxId,
+            String businessEmail,
+            String phone,
+            String logoUrl,
+            Address address
+    ) {
+        this.personType = personType;
+        this.displayName = displayName;
+        this.legalName = legalName;
+        this.taxId = taxId;
+        this.businessEmail = businessEmail;
+        this.phone = phone;
+        this.logoUrl = logoUrl;
+        this.address = address;
+    }
 }

@@ -1,6 +1,7 @@
 package br.com.matheus.orcafacil.domain.business;
 
-import jakarta.persistence.EntityNotFoundException;
+import br.com.matheus.orcafacil.shared.exception.ConflictException;
+import br.com.matheus.orcafacil.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +17,13 @@ public class BusinessService {
     @Transactional(readOnly = true)
     public Business findByOwnerId(UUID ownerId) {
         return businessRepository.findByOwnerId(ownerId)
-                .orElseThrow(() -> new EntityNotFoundException("Business not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found"));
     }
 
     @Transactional
     public Business create(UUID ownerId, Business business) {
         if (businessRepository.existsByOwnerId(ownerId)) {
-            throw new IllegalStateException("Business already exists for this owner");
+            throw new ConflictException("Business already exists for this owner");
         }
 
         business.setOwnerId(ownerId);

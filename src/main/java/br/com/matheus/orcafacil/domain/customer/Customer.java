@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +62,25 @@ public class Customer extends BaseEntity {
 
     private String notes;
 
+    @Setter(AccessLevel.NONE)
+    @Column(name = "deactivated_at")
+    private Instant deactivatedAt;
+
     @OneToMany(mappedBy = "customer")
     @Setter(AccessLevel.NONE)
     private List<Quote> quotes = new ArrayList<>();
+
+    public boolean isActive() {
+        return deactivatedAt == null;
+    }
+
+    public void deactivate() {
+        if (isActive()) {
+            deactivatedAt = Instant.now();
+        }
+    }
+
+    public void reactivate() {
+        deactivatedAt = null;
+    }
 }

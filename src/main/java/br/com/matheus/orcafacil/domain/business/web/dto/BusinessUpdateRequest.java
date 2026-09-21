@@ -1,6 +1,7 @@
 package br.com.matheus.orcafacil.domain.business.web.dto;
 
 import br.com.matheus.orcafacil.domain.shared.PersonType;
+import br.com.matheus.orcafacil.shared.web.dto.AddressData;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;

@@ -1,4 +1,4 @@
-package br.com.matheus.orcafacil.domain.business.web.dto;
+package br.com.matheus.orcafacil.shared.web.dto;
 
 import br.com.matheus.orcafacil.domain.shared.Address;
 import jakarta.validation.constraints.Pattern;

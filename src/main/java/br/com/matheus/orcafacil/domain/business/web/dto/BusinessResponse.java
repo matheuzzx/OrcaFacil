@@ -2,6 +2,7 @@ package br.com.matheus.orcafacil.domain.business.web.dto;
 
 import br.com.matheus.orcafacil.domain.business.Business;
 import br.com.matheus.orcafacil.domain.shared.PersonType;
+import br.com.matheus.orcafacil.shared.web.dto.AddressData;
 
 import java.time.Instant;
 import java.util.UUID;

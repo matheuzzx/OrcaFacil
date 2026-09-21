@@ -1,0 +1,335 @@
+{
+  "info": {
+    "name": "Orça Fácil API",
+    "description": "Coleção gerada a partir dos controllers atuais do backend (Spring Boot 3 + Supabase Auth). Toda rota sob /api/** exige um Bearer token JWT do Supabase, exceto /api/public/**, /actuator/health e /error (ver SecurityConfig). Defina a variável de coleção `jwt` com um access_token válido do Supabase antes de rodar as requisições.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "jwt", "value": "", "type": "string" },
+    { "key": "customerId", "value": "", "type": "string" },
+    { "key": "quoteId", "value": "", "type": "string" },
+    { "key": "itemId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Business",
+      "item": [
+        {
+          "name": "Get my business",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/businesses/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "businesses", "me"]
+            },
+            "description": "Retorna o business do dono autenticado (owner_id vem do sub do JWT)."
+          }
+        },
+        {
+          "name": "Create my business",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personType\": \"COMPANY\",\n  \"displayName\": \"Estúdio Criativo\",\n  \"legalName\": \"Estúdio Criativo Serviços de Design LTDA\",\n  \"taxId\": \"12345678000199\",\n  \"businessEmail\": \"contato@estudiocriativo.com\",\n  \"phone\": \"11987654321\",\n  \"logoUrl\": \"https://example.com/logo.png\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"complement\": \"Sala 4\",\n    \"district\": \"Centro\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01310-100\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/businesses/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "businesses", "me"]
+            },
+            "description": "Cria o business do dono autenticado. Só é permitido um business por owner_id (409 se já existir)."
+          }
+        },
+        {
+          "name": "Update my business",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Estúdio Criativo Design\",\n  \"phone\": \"11912345678\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/businesses/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "businesses", "me"]
+            },
+            "description": "Atualização parcial — envie só os campos que quer alterar."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "List customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers?deactivated=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers"],
+              "query": [
+                {
+                  "key": "deactivated",
+                  "value": "false",
+                  "description": "true lista os clientes desativados, false (padrão) lista os ativos"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get customer by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{customerId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personType\": \"INDIVIDUAL\",\n  \"name\": \"João da Silva\",\n  \"taxId\": \"12345678909\",\n  \"email\": \"joao.silva@example.com\",\n  \"phone\": \"11998765432\",\n  \"address\": {\n    \"street\": \"Av. Paulista\",\n    \"number\": \"1000\",\n    \"complement\": \"Apto 52\",\n    \"district\": \"Bela Vista\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"postalCode\": \"01310-100\"\n  },\n  \"notes\": \"Cliente indicado por parceiro\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers"]
+            },
+            "description": "taxId é único por business (409 se já existir para o mesmo dono)."
+          }
+        },
+        {
+          "name": "Update customer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"11911112222\",\n  \"notes\": \"Atualizou telefone de contato\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{customerId}}"]
+            },
+            "description": "Atualização parcial. Só funciona em cliente ativo."
+          }
+        },
+        {
+          "name": "Deactivate customer",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{customerId}}", "deactivate"]
+            },
+            "description": "Soft delete — não remove o registro, só marca deactivated_at."
+          }
+        },
+        {
+          "name": "Reactivate customer",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}/reactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{customerId}}", "reactivate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quotes",
+      "item": [
+        {
+          "name": "List quotes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "DRAFT",
+                  "description": "DRAFT | SENT | APPROVED | REJECTED | EXPIRED | CANCELLED",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get quote by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/{{quoteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "{{quoteId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create quote",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"title\": \"Reforma de sala comercial\",\n  \"issueDate\": \"2026-09-21\",\n  \"validUntil\": \"2026-10-21\",\n  \"discount\": 50.00,\n  \"notes\": \"Orçamento válido por 30 dias\",\n  \"terms\": \"50% de entrada, 50% na entrega\",\n  \"items\": [\n    {\n      \"position\": 1,\n      \"description\": \"Pintura das paredes\",\n      \"quantity\": 40,\n      \"unit\": \"m2\",\n      \"unitPrice\": 35.00\n    },\n    {\n      \"position\": 2,\n      \"description\": \"Instalação elétrica\",\n      \"quantity\": 1,\n      \"unit\": \"un\",\n      \"unitPrice\": 800.00\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes"]
+            },
+            "description": "customerId precisa ser de um cliente ativo do mesmo business. number/status/subtotal/total são calculados pelo backend. validUntil é obrigatório mesmo em DRAFT (comportamento atual do QuoteService)."
+          }
+        },
+        {
+          "name": "Update quote",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Reforma de sala comercial - revisado\",\n  \"validUntil\": \"2026-11-05\",\n  \"discount\": 100.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/{{quoteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "{{quoteId}}"]
+            },
+            "description": "Só funciona enquanto o orçamento estiver em DRAFT (409 fora disso)."
+          }
+        },
+        {
+          "name": "Change quote status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SENT\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/{{quoteId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "{{quoteId}}", "status"]
+            },
+            "description": "Máquina de estados: DRAFT->SENT|CANCELLED; SENT->APPROVED|REJECTED|EXPIRED|CANCELLED; os demais são terminais. Enviar (SENT) exige pelo menos 1 item."
+          }
+        },
+        {
+          "name": "Add quote item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": 3,\n  \"description\": \"Troca de piso\",\n  \"quantity\": 25,\n  \"unit\": \"m2\",\n  \"unitPrice\": 60.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/{{quoteId}}/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "{{quoteId}}", "items"]
+            },
+            "description": "Só funciona em orçamento DRAFT. Retorna o quote inteiro já com subtotal/total recalculados."
+          }
+        },
+        {
+          "name": "Update quote item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 30,\n  \"unitPrice\": 55.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/{{quoteId}}/items/{{itemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "{{quoteId}}", "items", "{{itemId}}"]
+            },
+            "description": "Atualização parcial do item. Só funciona em orçamento DRAFT."
+          }
+        },
+        {
+          "name": "Remove quote item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/{{quoteId}}/items/{{itemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "{{quoteId}}", "items", "{{itemId}}"]
+            },
+            "description": "204 No Content. Só funciona em orçamento DRAFT."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,8 @@
-package br.com.matheus.orcafacil.domain.quote;
+package br.com.matheus.orcafacil.domain.quote.entity;
 
 import br.com.matheus.orcafacil.domain.business.Business;
 import br.com.matheus.orcafacil.domain.customer.Customer;
+import br.com.matheus.orcafacil.domain.quote.QuoteStatus;
 import br.com.matheus.orcafacil.domain.shared.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

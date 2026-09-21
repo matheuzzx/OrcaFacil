@@ -93,7 +93,12 @@ public class CustomerService {
         return customer;
     }
 
-    private Customer findActiveById(UUID ownerId, UUID customerId) {
+    /**
+     * Public because {@code QuoteService} (a different package) needs to resolve
+     * an active customer when creating or reassigning a quote.
+     */
+    @Transactional(readOnly = true)
+    public Customer findActiveById(UUID ownerId, UUID customerId) {
         return customerRepository
                 .findByIdAndBusinessOwnerIdAndDeactivatedAtIsNull(customerId, ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Active customer not found"));

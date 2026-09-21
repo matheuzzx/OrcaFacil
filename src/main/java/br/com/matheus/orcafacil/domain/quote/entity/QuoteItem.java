@@ -1,4 +1,4 @@
-package br.com.matheus.orcafacil.domain.quote;
+package br.com.matheus.orcafacil.domain.quote.entity;
 
 import br.com.matheus.orcafacil.domain.shared.BaseEntity;
 import jakarta.persistence.Column;

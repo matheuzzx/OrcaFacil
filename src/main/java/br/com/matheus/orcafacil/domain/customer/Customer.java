@@ -1,7 +1,7 @@
 package br.com.matheus.orcafacil.domain.customer;
 
 import br.com.matheus.orcafacil.domain.business.Business;
-import br.com.matheus.orcafacil.domain.quote.Quote;
+import br.com.matheus.orcafacil.domain.quote.entity.Quote;
 import br.com.matheus.orcafacil.domain.shared.Address;
 import br.com.matheus.orcafacil.domain.shared.BaseEntity;
 import br.com.matheus.orcafacil.domain.shared.PersonType;

@@ -70,6 +70,24 @@ public class Customer extends BaseEntity {
     @Setter(AccessLevel.NONE)
     private List<Quote> quotes = new ArrayList<>();
 
+    public Customer(
+            PersonType personType,
+            String name,
+            String taxId,
+            String email,
+            String phone,
+            Address address,
+            String notes
+    ) {
+        this.personType = personType;
+        this.name = name;
+        this.taxId = taxId;
+        this.email = email;
+        this.phone = phone;
+        this.address = address;
+        this.notes = notes;
+    }
+
     public boolean isActive() {
         return deactivatedAt == null;
     }

@@ -43,6 +43,20 @@ public class QuoteItem extends BaseEntity {
     @Column(nullable = false, precision = 14, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
+    public QuoteItem(
+            Integer position,
+            String description,
+            BigDecimal quantity,
+            String unit,
+            BigDecimal unitPrice
+    ) {
+        this.position = position;
+        this.description = description;
+        this.quantity = quantity;
+        this.unit = unit;
+        this.unitPrice = unitPrice;
+    }
+
     void setQuote(Quote quote) {
         this.quote = quote;
     }

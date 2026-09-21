@@ -81,6 +81,22 @@ public class Quote extends BaseEntity {
     @Setter(AccessLevel.NONE)
     private List<QuoteItem> items = new ArrayList<>();
 
+    public Quote(
+            String title,
+            LocalDate issueDate,
+            LocalDate validUntil,
+            BigDecimal discount,
+            String notes,
+            String terms
+    ) {
+        this.title = title;
+        this.issueDate = issueDate;
+        this.validUntil = validUntil;
+        this.discount = discount;
+        this.notes = notes;
+        this.terms = terms;
+    }
+
     public void addItem(QuoteItem item) {
         items.add(item);
         item.setQuote(this);

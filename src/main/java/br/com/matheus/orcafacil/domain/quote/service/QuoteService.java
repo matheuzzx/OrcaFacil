@@ -25,9 +25,9 @@ import java.util.UUID;
  * Owns the quote as a whole: linking it to a business and customer, assigning
  * its sequential number, enforcing the DRAFT/SENT/APPROVED/REJECTED/EXPIRED/
  * CANCELLED status machine, and keeping subtotal/discount/total in sync with
- * its items. Per-item validation and per-item total lives in
- * {@link QuoteItemService}; this class delegates to it and never touches an
- * item's fields directly.
+ * its items. Per-item validation, per-item total and item position all live
+ * in {@link QuoteItemService}; this class delegates to it and never touches
+ * an item's fields directly.
  */
 @Service
 @RequiredArgsConstructor
@@ -55,7 +55,7 @@ public class QuoteService {
     }
 
     @Transactional
-    public Quote create(UUID ownerId, UUID customerId, Quote quote) {
+    public Quote create(UUID ownerId, UUID customerId, Quote quote, List<QuoteItem> items) {
         Business business = businessService.findByOwnerId(ownerId);
         Customer customer = customerService.findActiveById(ownerId, customerId);
 
@@ -67,7 +67,7 @@ public class QuoteService {
         quote.setDiscount(moneyOrZero(quote.getDiscount()));
 
         validateDates(quote);
-        quoteItemService.prepareAll(quote.getItems());
+        quoteItemService.addAll(quote, items);
         recalculateTotals(quote);
 
         return quoteRepository.save(quote);
@@ -140,6 +140,13 @@ public class QuoteService {
         quoteItemService.remove(quote, ownerId, quoteId, itemId);
         recalculateTotals(quote);
 
+        return quote;
+    }
+
+    @Transactional
+    public Quote reorderItems(UUID ownerId, UUID quoteId, List<UUID> itemIds) {
+        Quote quote = findEditableById(ownerId, quoteId);
+        quoteItemService.reorder(quote, itemIds);
         return quote;
     }
 

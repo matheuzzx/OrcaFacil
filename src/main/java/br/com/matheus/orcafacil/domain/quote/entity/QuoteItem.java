@@ -26,6 +26,13 @@ public class QuoteItem extends BaseEntity {
     @Setter(AccessLevel.NONE)
     private Quote quote;
 
+    /**
+     * Zero-based order of this item within the quote. Fully owned by
+     * {@link br.com.matheus.orcafacil.domain.quote.service.QuoteItemService} —
+     * assigned on insertion, kept contiguous on removal, and only ever
+     * changed in bulk via the reorder operation. Never accepted from a
+     * client request.
+     */
     @Column(name = "position", nullable = false)
     private Integer position;
 
@@ -44,13 +51,11 @@ public class QuoteItem extends BaseEntity {
     private BigDecimal total = BigDecimal.ZERO;
 
     public QuoteItem(
-            Integer position,
             String description,
             BigDecimal quantity,
             String unit,
             BigDecimal unitPrice
     ) {
-        this.position = position;
         this.description = description;
         this.quantity = quantity;
         this.unit = unit;

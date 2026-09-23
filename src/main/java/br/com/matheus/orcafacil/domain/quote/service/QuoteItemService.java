@@ -10,13 +10,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.RoundingMode;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
- * Owns everything about a single quote item: finding it, validating it, and
- * keeping its {@code total} in sync with quantity x unit price. Quote-level
- * concerns (totals across all items, status, dates) belong to {@link QuoteService}.
+ * Owns everything about a single quote item: finding it, validating it,
+ * keeping its {@code total} in sync with quantity x unit price, and owning
+ * {@code position} end to end — it is never accepted from a client request.
+ * Positions are assigned on insertion (0-based, append order), kept
+ * contiguous on removal, and only ever reassigned in bulk via
+ * {@link #reorder(Quote, List)}. Quote-level concerns (totals across all
+ * items, status, dates) belong to {@link QuoteService}.
  */
 @Service
 @RequiredArgsConstructor
@@ -33,9 +40,28 @@ public class QuoteItemService {
 
     @Transactional
     public QuoteItem add(Quote quote, QuoteItem item) {
+        item.setPosition(quote.getItems().size());
         prepare(item);
         quote.addItem(item);
         return quoteItemRepository.save(item);
+    }
+
+    /**
+     * Attaches a batch of items to a quote that has not been persisted yet,
+     * assigning sequential positions in list order. Unlike {@link #add},
+     * items are not saved individually — a not-yet-persisted quote has no
+     * id for them to reference yet, so they ride along via
+     * {@code CascadeType.ALL} when the quote itself is saved.
+     */
+    public void addAll(Quote quote, List<QuoteItem> items) {
+        if (items == null) {
+            return;
+        }
+        items.forEach(item -> {
+            item.setPosition(quote.getItems().size());
+            prepare(item);
+            quote.addItem(item);
+        });
     }
 
     @Transactional
@@ -47,9 +73,6 @@ public class QuoteItemService {
     ) {
         QuoteItem item = findById(ownerId, quoteId, itemId);
 
-        if (changes.getPosition() != null) {
-            item.setPosition(changes.getPosition());
-        }
         if (changes.getDescription() != null) {
             item.setDescription(changes.getDescription());
         }
@@ -71,6 +94,34 @@ public class QuoteItemService {
     public void remove(Quote quote, UUID ownerId, UUID quoteId, UUID itemId) {
         QuoteItem item = findById(ownerId, quoteId, itemId);
         quote.removeItem(item);
+        reindex(quote.getItems());
+    }
+
+    /**
+     * Reassigns every item of the quote to the exact order given by
+     * {@code itemIds} (0-based). {@code itemIds} must be a permutation of
+     * the quote's current item ids — no more, no less, no duplicates.
+     */
+    @Transactional
+    public void reorder(Quote quote, List<UUID> itemIds) {
+        List<QuoteItem> items = quote.getItems();
+
+        boolean isPermutationOfCurrentItems = itemIds.size() == items.size()
+                && items.stream().map(QuoteItem::getId).collect(Collectors.toSet())
+                        .equals(new HashSet<>(itemIds));
+
+        if (!isPermutationOfCurrentItems) {
+            throw new ConflictException(
+                    "itemIds must contain exactly the quote's current items, each exactly once"
+            );
+        }
+
+        Map<UUID, QuoteItem> itemsById = items.stream()
+                .collect(Collectors.toMap(QuoteItem::getId, item -> item));
+
+        for (int position = 0; position < itemIds.size(); position++) {
+            itemsById.get(itemIds.get(position)).setPosition(position);
+        }
     }
 
     /**
@@ -82,15 +133,18 @@ public class QuoteItemService {
         items.forEach(this::prepare);
     }
 
+    private void reindex(List<QuoteItem> items) {
+        for (int position = 0; position < items.size(); position++) {
+            items.get(position).setPosition(position);
+        }
+    }
+
     private void prepare(QuoteItem item) {
         validate(item);
         calculateTotal(item);
     }
 
     private void validate(QuoteItem item) {
-        if (item.getPosition() == null || item.getPosition() < 0) {
-            throw new ConflictException("Quote item position must be zero or greater");
-        }
         if (item.getDescription() == null || item.getDescription().isBlank()) {
             throw new ConflictException("Quote item description is required");
         }

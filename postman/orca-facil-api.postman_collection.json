@@ -225,7 +225,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"title\": \"Reforma de sala comercial\",\n  \"issueDate\": \"2026-09-21\",\n  \"validUntil\": \"2026-10-21\",\n  \"discount\": 50.00,\n  \"notes\": \"Orçamento válido por 30 dias\",\n  \"terms\": \"50% de entrada, 50% na entrega\",\n  \"items\": [\n    {\n      \"position\": 1,\n      \"description\": \"Pintura das paredes\",\n      \"quantity\": 40,\n      \"unit\": \"m2\",\n      \"unitPrice\": 35.00\n    },\n    {\n      \"position\": 2,\n      \"description\": \"Instalação elétrica\",\n      \"quantity\": 1,\n      \"unit\": \"un\",\n      \"unitPrice\": 800.00\n    }\n  ]\n}",
+              "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"title\": \"Reforma de sala comercial\",\n  \"issueDate\": \"2026-09-21\",\n  \"validUntil\": \"2026-10-21\",\n  \"discount\": 50.00,\n  \"notes\": \"Orçamento válido por 30 dias\",\n  \"terms\": \"50% de entrada, 50% na entrega\",\n  \"items\": [\n    {\n      \"description\": \"Pintura das paredes\",\n      \"quantity\": 40,\n      \"unit\": \"m2\",\n      \"unitPrice\": 35.00\n    },\n    {\n      \"description\": \"Instalação elétrica\",\n      \"quantity\": 1,\n      \"unit\": \"un\",\n      \"unitPrice\": 800.00\n    }\n  ]\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -233,7 +233,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "quotes"]
             },
-            "description": "customerId precisa ser de um cliente ativo do mesmo business. number/status/subtotal/total são calculados pelo backend. validUntil é obrigatório mesmo em DRAFT (comportamento atual do QuoteService)."
+            "description": "customerId precisa ser de um cliente ativo do mesmo business. number/status/subtotal/total são calculados pelo backend. validUntil é obrigatório mesmo em DRAFT (comportamento atual do QuoteService). position dos itens não é enviado — é atribuído pelo backend na ordem do array (0-based)."
           }
         },
         {
@@ -285,7 +285,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"position\": 3,\n  \"description\": \"Troca de piso\",\n  \"quantity\": 25,\n  \"unit\": \"m2\",\n  \"unitPrice\": 60.00\n}",
+              "raw": "{\n  \"description\": \"Troca de piso\",\n  \"quantity\": 25,\n  \"unit\": \"m2\",\n  \"unitPrice\": 60.00\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -293,7 +293,27 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "quotes", "{{quoteId}}", "items"]
             },
-            "description": "Só funciona em orçamento DRAFT. Retorna o quote inteiro já com subtotal/total recalculados."
+            "description": "Só funciona em orçamento DRAFT. position não é enviado — o item entra sempre na última posição, atribuída pelo backend. Retorna o quote inteiro já com subtotal/total recalculados."
+          }
+        },
+        {
+          "name": "Reorder quote items",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemIds\": [\n    \"{{itemId}}\"\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/quotes/{{quoteId}}/items/reorder",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotes", "{{quoteId}}", "items", "reorder"]
+            },
+            "description": "itemIds precisa ser uma permutação exata dos itens atuais do orçamento (mesma quantidade, cada id uma vez). O índice no array vira a nova position (0-based). Só funciona em DRAFT."
           }
         },
         {

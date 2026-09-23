@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public record QuoteItemUpdateRequest(
-        @PositiveOrZero Integer position,
         @Size(min = 1, max = 255) String description,
         @Positive BigDecimal quantity,
         @Size(max = 20) String unit,

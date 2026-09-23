@@ -4,6 +4,7 @@ import br.com.matheus.orcafacil.domain.quote.QuoteStatus;
 import br.com.matheus.orcafacil.domain.quote.entity.Quote;
 import br.com.matheus.orcafacil.domain.quote.entity.QuoteItem;
 import br.com.matheus.orcafacil.domain.quote.service.QuoteService;
+import br.com.matheus.orcafacil.domain.quote.web.dto.QuoteItemReorderRequest;
 import br.com.matheus.orcafacil.domain.quote.web.dto.QuoteItemRequest;
 import br.com.matheus.orcafacil.domain.quote.web.dto.QuoteItemUpdateRequest;
 import br.com.matheus.orcafacil.domain.quote.web.dto.QuoteRequest;
@@ -62,7 +63,11 @@ public class QuoteController {
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody QuoteRequest request
     ) {
-        Quote quote = quoteService.create(ownerId(jwt), request.customerId(), toEntity(request));
+        List<QuoteItem> items = request.items() == null
+                ? List.of()
+                : request.items().stream().map(this::toEntity).toList();
+
+        Quote quote = quoteService.create(ownerId(jwt), request.customerId(), toEntity(request), items);
         return QuoteResponse.from(quote);
     }
 
@@ -102,6 +107,16 @@ public class QuoteController {
         return QuoteResponse.from(quote);
     }
 
+    @PatchMapping("/{quoteId}/items/reorder")
+    public QuoteResponse reorderItems(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID quoteId,
+            @Valid @RequestBody QuoteItemReorderRequest request
+    ) {
+        Quote quote = quoteService.reorderItems(ownerId(jwt), quoteId, request.itemIds());
+        return QuoteResponse.from(quote);
+    }
+
     @PatchMapping("/{quoteId}/items/{itemId}")
     public QuoteResponse updateItem(
             @AuthenticationPrincipal Jwt jwt,
@@ -128,7 +143,7 @@ public class QuoteController {
     }
 
     private Quote toEntity(QuoteRequest request) {
-        Quote quote = new Quote(
+        return new Quote(
                 request.title(),
                 request.issueDate(),
                 request.validUntil(),
@@ -136,12 +151,6 @@ public class QuoteController {
                 request.notes(),
                 request.terms()
         );
-
-        if (request.items() != null) {
-            request.items().forEach(item -> quote.addItem(toEntity(item)));
-        }
-
-        return quote;
     }
 
     private Quote toEntity(QuoteUpdateRequest request) {
@@ -157,7 +166,6 @@ public class QuoteController {
 
     private QuoteItem toEntity(QuoteItemRequest request) {
         return new QuoteItem(
-                request.position(),
                 request.description(),
                 request.quantity(),
                 request.unit(),
@@ -167,7 +175,6 @@ public class QuoteController {
 
     private QuoteItem toEntity(QuoteItemUpdateRequest request) {
         return new QuoteItem(
-                request.position(),
                 request.description(),
                 request.quantity(),
                 request.unit(),

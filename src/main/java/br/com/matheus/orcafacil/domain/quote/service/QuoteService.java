@@ -28,6 +28,11 @@ import java.util.UUID;
  * its items. Per-item validation, per-item total and item position all live
  * in {@link QuoteItemService}; this class delegates to it and never touches
  * an item's fields directly.
+ *
+ * <p>A quote is only ever hard-deleted while it's still a DRAFT — nothing
+ * outside the system has seen it yet. Once it moves past DRAFT, {@code
+ * CANCELLED} is the terminal state that plays the role a delete would
+ * (see {@link #changeStatus}), preserving the record instead of erasing it.
  */
 @Service
 @RequiredArgsConstructor
@@ -107,6 +112,17 @@ public class QuoteService {
         validateDates(quote);
         recalculateTotals(quote);
         return quote;
+    }
+
+    /**
+     * Hard-deletes a quote. Only allowed while it's still a DRAFT (see class
+     * javadoc) — items are removed along with it via {@code CascadeType.ALL}
+     * on {@link Quote#getItems()}.
+     */
+    @Transactional
+    public void delete(UUID ownerId, UUID quoteId) {
+        Quote quote = findEditableById(ownerId, quoteId);
+        quoteRepository.delete(quote);
     }
 
     @Transactional

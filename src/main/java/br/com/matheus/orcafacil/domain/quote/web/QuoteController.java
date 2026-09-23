@@ -86,6 +86,15 @@ public class QuoteController {
         return QuoteResponse.from(quote);
     }
 
+    @DeleteMapping("/{quoteId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID quoteId
+    ) {
+        quoteService.delete(ownerId(jwt), quoteId);
+    }
+
     @PatchMapping("/{quoteId}/status")
     public QuoteResponse changeStatus(
             @AuthenticationPrincipal Jwt jwt,

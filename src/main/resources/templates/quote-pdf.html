@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="|Orçamento Nº ${quote.number} - ${quote.business.name}|">Orçamento Comercial</title>
+
+    <!--
+        Este mesmo template serve o preview (GET /api/quotes/{id}/preview) e,
+        depois, o PDF. Tags vazias ficam fechadas (<br />, <img ... />) porque o
+        openhtmltopdf exige HTML bem-formado (XHTML).
+    -->
+
+    <style>
+        @page {
+            size: A4;
+            margin: 14mm 15mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 2%;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #263244;
+            background: #ffffff;
+        }
+
+        .document {
+            width: 100%;
+        }
+
+        /* CABEÇALHO */
+
+        .header {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 28px;
+        }
+
+        .header td {
+            vertical-align: top;
+            border: none;
+            padding: 0;
+        }
+
+        .brand {
+            width: 60%;
+        }
+
+        .brand-mark {
+            display: inline-block;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 7px 11px;
+            border-radius: 7px;
+            margin-bottom: 9px;
+        }
+
+        .company-name {
+            font-size: 19px;
+            font-weight: bold;
+            color: #14213d;
+            margin: 0;
+        }
+
+        .company-details {
+            color: #64748b;
+            font-size: 10px;
+            line-height: 1.7;
+            margin-top: 5px;
+        }
+
+        .document-info {
+            width: 40%;
+            text-align: right;
+        }
+
+        .document-label {
+            color: #64748b;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .document-number {
+            font-size: 23px;
+            font-weight: bold;
+            color: #14213d;
+            margin: 5px 0;
+        }
+
+        .status {
+            display: inline-block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .blue-line {
+            height: 3px;
+            background: #2563eb;
+            margin-bottom: 25px;
+        }
+
+        /* TÍTULOS */
+
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #14213d;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin: 0 0 12px;
+        }
+
+        .section {
+            margin-bottom: 23px;
+        }
+
+        /* INFORMAÇÕES DO CLIENTE */
+
+        .info-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px 0;
+            margin-left: -8px;
+        }
+
+        .info-table td {
+            width: 50%;
+            background: #f5f7fb;
+            border: 1px solid #e8edf5;
+            border-radius: 6px;
+            padding: 12px;
+            vertical-align: top;
+        }
+
+        .field-label {
+            color: #64748b;
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .field-value {
+            color: #14213d;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .field-secondary {
+            color: #64748b;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+        /* TABELA DE ITENS */
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-table thead {
+            display: table-header-group;
+        }
+
+        .items-table th {
+            background: #14213d;
+            color: #ffffff;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 11px 8px;
+            text-align: left;
+        }
+
+        .items-table th:first-child {
+            border-radius: 5px 0 0 0;
+        }
+
+        .items-table th:last-child {
+            border-radius: 0 5px 0 0;
+        }
+
+        .items-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e8edf5;
+            vertical-align: top;
+        }
+
+        .items-table tbody tr {
+            page-break-inside: avoid;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #14213d;
+        }
+
+        .item-description {
+            color: #64748b;
+            font-size: 9px;
+            margin-top: 3px;
+        }
+
+        .number {
+            text-align: right !important;
+            white-space: nowrap;
+        }
+
+        /* RESUMO FINANCEIRO */
+
+        .financial-area {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .financial-area td {
+            border: none;
+            vertical-align: top;
+            padding: 0;
+        }
+
+        .payment-note {
+            width: 53%;
+            padding-right: 20px !important;
+        }
+
+        .totals {
+            width: 47%;
+        }
+
+        .note-box {
+            background: #f5f7fb;
+            border-left: 3px solid #2563eb;
+            padding: 12px;
+            border-radius: 3px;
+        }
+
+        .note-title {
+            color: #14213d;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .note-text {
+            color: #64748b;
+            font-size: 10px;
+        }
+
+        .total-row {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .total-row td {
+            padding: 5px 0;
+            color: #64748b;
+            font-size: 10px;
+        }
+
+        .total-row .amount {
+            text-align: right;
+            color: #263244;
+            white-space: nowrap;
+        }
+
+        .grand-total td {
+            border-top: 1px solid #dbe3ef;
+            padding-top: 12px;
+            margin-top: 5px;
+            color: #14213d;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .grand-total .amount {
+            color: #2563eb;
+            font-size: 19px;
+        }
+
+        /* CONDIÇÕES */
+
+        .terms-box {
+            border: 1px solid #e8edf5;
+            border-radius: 6px;
+            padding: 13px;
+        }
+
+        .terms-text {
+            color: #64748b;
+            font-size: 10px;
+            white-space: pre-wrap;
+        }
+
+        /* RODAPÉ */
+
+        .footer {
+            border-top: 1px solid #e8edf5;
+            padding-top: 13px;
+            margin-top: 30px;
+            color: #94a3b8;
+            font-size: 9px;
+            text-align: center;
+        }
+
+        .footer strong {
+            color: #64748b;
+        }
+
+        .signature-area {
+            margin-top: 35px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .signature-area td {
+            width: 50%;
+            text-align: center;
+            padding: 0 15px;
+            border: none;
+        }
+
+        .signature-line {
+            border-top: 1px solid #cbd5e1;
+            padding-top: 7px;
+            margin-top: 35px;
+            color: #64748b;
+            font-size: 9px;
+        }
+
+        .muted {
+            color: #64748b;
+
+        .status-DRAFT { background: #f1f5f9; color: #475569; }
+        .status-APPROVED { background: #ecfdf5; color: #047857; }
+        .status-REJECTED, .status-CANCELLED, .status-EXPIRED { background: #fef2f2; color: #b91c1c; }
+
+        /*
+         * PREVIEW NO NAVEGADOR
+         * Só vale na tela: simula uma folha A4. O openhtmltopdf renderiza com
+         * mídia "print", então ignora este bloco e o PDF sai igual ao layout acima.
+         */
+        @media screen {
+            html {
+                background: #e2e8f0;
+            }
+
+            body {
+                margin: 0;
+                padding: 32px 16px;
+                background: #e2e8f0;
+            }
+
+            .document {
+                max-width: 210mm;
+                min-height: 297mm;
+                margin: 0 auto;
+                padding: 14mm 15mm;
+                background: #ffffff;
+                border-radius: 4px;
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="document">
+
+    <!-- CABEÇALHO DA EMPRESA -->
+
+    <table class="header">
+        <tr>
+            <td class="brand">
+                <div class="brand-mark"
+                     th:text="${quote.business.initials}">OF</div>
+
+                <h1 class="company-name"
+                    th:text="${quote.business.name}">
+                    OrçaFácil Soluções
+                </h1>
+
+                <div class="company-details">
+                    <th:block th:if="${quote.business.legalName}">
+                        <span th:text="${quote.business.legalName}">OrçaFácil Soluções Ltda</span><br />
+                    </th:block>
+                    <th:block th:if="${quote.business.taxId}">
+                        <span th:text="|${quote.business.taxIdLabel}: ${quote.business.taxId}|">CNPJ: 12.345.678/0001-90</span><br />
+                    </th:block>
+                    <th:block th:if="${quote.business.email}">
+                        <span th:text="${quote.business.email}">contato@orcafacil.com.br</span><br />
+                    </th:block>
+                    <th:block th:if="${quote.business.phone}">
+                        <span th:text="${quote.business.phone}">(11) 3456-7890</span><br />
+                    </th:block>
+                    <span th:if="${quote.business.address}"
+                          th:text="${quote.business.address}">Rua Exemplo, 100 - Centro, São Paulo/SP</span>
+                </div>
+            </td>
+
+            <td class="document-info">
+                <div class="document-label">Proposta comercial</div>
+
+                <div class="document-number">
+                    Nº <span th:text="${quote.number}">0042</span>
+                </div>
+
+                <span class="status"
+                      th:classappend="|status-${quote.status}|"
+                      th:text="${#strings.toUpperCase(quote.statusLabel)}">ORÇAMENTO</span>
+
+                <div class="company-details">
+                    Emissão:
+                    <strong th:text="${quote.issueDate}">13/10/2026</strong>
+                    <br />
+                    Validade:
+                    <strong th:text="${quote.validUntil}">20/10/2026</strong>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="blue-line"></div>
+
+    <!-- DADOS DO CLIENTE -->
+
+    <section class="section">
+        <h2 class="section-title">01 — Dados do cliente</h2>
+
+        <table class="info-table">
+            <tr>
+                <td>
+                    <div class="field-label">Cliente</div>
+
+                    <div class="field-value"
+                         th:text="${quote.customer.name}">
+                        Mariana Costa
+                    </div>
+
+                    <div class="field-secondary">
+                        <span th:text="${quote.customer.typeLabel}">Pessoa física</span>
+                        <th:block th:if="${quote.customer.taxId}">
+                            · <span th:text="|${quote.customer.taxIdLabel}: ${quote.customer.taxId}|">CPF: 123.456.789-00</span>
+                        </th:block>
+                    </div>
+
+                    <div class="field-secondary"
+                         th:if="${quote.customer.email != null or quote.customer.phone != null}">
+                        <span th:if="${quote.customer.email}" th:text="${quote.customer.email}">mariana@email.com</span>
+                        <th:block th:if="${quote.customer.email != null and quote.customer.phone != null}"> · </th:block>
+                        <span th:if="${quote.customer.phone}" th:text="${quote.customer.phone}">(11) 98888-7777</span>
+                    </div>
+
+                    <div class="field-secondary"
+                         th:if="${quote.customer.address}"
+                         th:text="${quote.customer.address}">
+                        Rua das Flores, 45 - Jardim, São Paulo/SP
+                    </div>
+                </td>
+
+                <td>
+                    <div class="field-label">Referência do orçamento</div>
+
+                    <div class="field-value"
+                         th:text="${quote.title != null ? quote.title : 'Orçamento Nº ' + quote.number}">
+                        Reforma de cozinha
+                    </div>
+
+                    <div class="field-secondary">
+                        Proposta preparada para avaliação
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- ITENS E SERVIÇOS -->
+
+    <section class="section">
+        <h2 class="section-title">02 — Descrição dos serviços</h2>
+
+        <table class="items-table">
+            <thead>
+            <tr>
+                <th style="width: 42%;">Descrição</th>
+                <th class="number" style="width: 12%;">Qtd.</th>
+                <th class="number" style="width: 23%;">Valor unitário</th>
+                <th class="number" style="width: 23%;">Total</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="item : ${quote.items}">
+                <td>
+                    <div class="item-name" th:text="${item.description}">
+                        Móveis planejados para cozinha
+                    </div>
+                </td>
+                <td class="number" th:text="${item.quantity}">1</td>
+                <td class="number" th:text="${item.unitPrice}">R$ 4.800,00</td>
+                <td class="number" th:text="${item.total}">R$ 4.800,00</td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(quote.items)}">
+                <td colspan="4" class="muted">Nenhum item adicionado a este orçamento.</td>
+            </tr>
+
+            <!-- Linhas de exemplo: aparecem só ao abrir o arquivo direto no
+                 navegador; o Thymeleaf remove ao renderizar (th:remove="all"). -->
+            <tr th:remove="all">
+                <td>
+                    <div class="item-name">Instalação de revestimento</div>
+                </td>
+                <td class="number">12 m²</td>
+                <td class="number">R$ 85,00</td>
+                <td class="number">R$ 1.020,00</td>
+            </tr>
+            <tr th:remove="all">
+                <td>
+                    <div class="item-name">Instalação hidráulica</div>
+                </td>
+                <td class="number">1</td>
+                <td class="number">R$ 680,00</td>
+                <td class="number">R$ 680,00</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- RESUMO FINANCEIRO -->
+
+    <table class="financial-area">
+        <tr>
+            <td class="payment-note">
+                <div class="note-box" th:if="${quote.notes}">
+                    <div class="note-title">Observações</div>
+
+                    <div class="note-text" th:text="${quote.notes}">
+                        Materiais e serviços conforme descrição
+                        dos itens deste orçamento.
+                    </div>
+                </div>
+            </td>
+
+            <td class="totals">
+                <table class="total-row">
+                    <tr>
+                        <td>Subtotal</td>
+                        <td class="amount" th:text="${quote.subtotal}">R$ 6.500,00</td>
+                    </tr>
+
+                    <tr th:if="${quote.hasDiscount}">
+                        <td>Desconto</td>
+                        <td class="amount" th:text="|- ${quote.discount}|">- R$ 0,00</td>
+                    </tr>
+
+                    <tr class="grand-total">
+                        <td>TOTAL</td>
+                        <td class="amount" th:text="${quote.total}">R$ 6.500,00</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- CONDIÇÕES COMERCIAIS -->
+
+    <section class="section" style="margin-top: 30px;" th:if="${quote.terms}">
+        <h2 class="section-title">03 — Condições comerciais</h2>
+
+        <div class="terms-box">
+            <div class="terms-text" th:text="${quote.terms}">Forma de pagamento: 50% na aprovação da proposta e 50% na conclusão dos serviços.</div>
+        </div>
+    </section>
+
+    <!-- ASSINATURAS -->
+
+    <table class="signature-area">
+        <tr>
+            <td>
+                <div class="signature-line">Responsável pela empresa</div>
+            </td>
+            <td>
+                <div class="signature-line">Aprovação do cliente</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- RODAPÉ -->
+
+    <div class="footer">
+        <strong>Obrigado pela oportunidade!</strong>
+        <br />
+        Este documento é uma proposta comercial e não substitui
+        documento fiscal.
+        <br />
+        -Desenvolvido por Matheus Medeiros-
+    </div>
+
+</div>
+</body>
+</html>

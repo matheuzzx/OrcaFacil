@@ -1,0 +1,28 @@
+services:
+  app:
+    build: .
+    container_name: orcafacil-api
+    ports:
+      - "8080:8080"
+    environment:
+      # Datasource (Supabase)
+      - SPRING_DATASOURCE_URL=${SUPABASE_DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${SUPABASE_DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_DB_PASSWORD}
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+
+      # OAuth2 / JWT (Supabase Auth)
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${SUPABASE_PROJECT_URL}/auth/v1
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=${SUPABASE_PROJECT_URL}/auth/v1/.well-known/jwks.json
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWS_ALGORITHMS=ES256
+
+      # JPA / Hibernate
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=app
+
+      # Custom App Config
+      - APP_CORS_ALLOWED_ORIGIN=${FRONTEND_URL}
+
+    # Carrega automaticamente o arquivo .env do diretório raiz
+    env_file:
+      - .env

@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: ${SUPABASE_DB_URL}
+    username: ${SUPABASE_DB_USERNAME}
+    password: ${SUPABASE_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SUPABASE_PROJECT_URL}/auth/v1
+          jwk-set-uri: ${SUPABASE_PROJECT_URL}/auth/v1/.well-known/jwks.json
+          jws-algorithms: ES256
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_schema: app
+
+app:
+  cors:
+    allowed-origin: ${FRONTEND_URL}

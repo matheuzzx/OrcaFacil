@@ -5,6 +5,7 @@ import br.com.matheus.orcafacil.domain.business.BusinessService;
 import br.com.matheus.orcafacil.domain.business.web.dto.BusinessRequest;
 import br.com.matheus.orcafacil.domain.business.web.dto.BusinessResponse;
 import br.com.matheus.orcafacil.domain.business.web.dto.BusinessUpdateRequest;
+import br.com.matheus.orcafacil.openapi.BusinessApiDocs;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,16 +24,18 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/businesses/me")
 @RequiredArgsConstructor
-public class BusinessController {
+public class BusinessController implements BusinessApiDocs {
 
     private final BusinessService businessService;
 
+    @Override
     @GetMapping
     public BusinessResponse findCurrentBusiness(@AuthenticationPrincipal Jwt jwt) {
         Business business = businessService.findByOwnerId(ownerId(jwt));
         return BusinessResponse.from(business);
     }
 
+    @Override
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public BusinessResponse create(
@@ -43,6 +46,7 @@ public class BusinessController {
         return BusinessResponse.from(business);
     }
 
+    @Override
     @PatchMapping
     public BusinessResponse update(
             @AuthenticationPrincipal Jwt jwt,

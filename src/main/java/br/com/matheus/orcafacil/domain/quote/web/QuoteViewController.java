@@ -2,6 +2,7 @@ package br.com.matheus.orcafacil.domain.quote.web;
 
 import br.com.matheus.orcafacil.domain.quote.service.QuoteDocumentService;
 import br.com.matheus.orcafacil.domain.quote.service.QuoteDocumentService.PdfDocument;
+import br.com.matheus.orcafacil.openapi.QuoteViewApiDocs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
@@ -26,7 +27,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/quotes")
 @RequiredArgsConstructor
-public class QuoteViewController {
+public class QuoteViewController implements QuoteViewApiDocs {
 
     private static final MediaType HTML_UTF8 = new MediaType(MediaType.TEXT_HTML, StandardCharsets.UTF_8);
 
@@ -34,6 +35,7 @@ public class QuoteViewController {
 
     // Sem "produces" de propósito nas duas rotas: se o orçamento não existir, o
     // GlobalExceptionHandler precisa conseguir responder o 404 em JSON.
+    @Override
     @GetMapping("/{quoteId}/preview")
     public ResponseEntity<String> preview(
             @AuthenticationPrincipal Jwt jwt,
@@ -53,6 +55,7 @@ public class QuoteViewController {
      * Por padrão abre o PDF no navegador (inline). Com {@code ?download=true}
      * o navegador baixa o arquivo.
      */
+    @Override
     @GetMapping("/{quoteId}/pdf")
     public ResponseEntity<byte[]> pdf(
             @AuthenticationPrincipal Jwt jwt,

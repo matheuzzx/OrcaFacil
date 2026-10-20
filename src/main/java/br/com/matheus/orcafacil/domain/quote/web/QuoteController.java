@@ -11,6 +11,7 @@ import br.com.matheus.orcafacil.domain.quote.web.dto.QuoteRequest;
 import br.com.matheus.orcafacil.domain.quote.web.dto.QuoteResponse;
 import br.com.matheus.orcafacil.domain.quote.web.dto.QuoteStatusRequest;
 import br.com.matheus.orcafacil.domain.quote.web.dto.QuoteUpdateRequest;
+import br.com.matheus.orcafacil.openapi.QuoteApiDocs;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,10 +34,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/quotes")
 @RequiredArgsConstructor
-public class QuoteController {
+public class QuoteController implements QuoteApiDocs {
 
     private final QuoteService quoteService;
 
+    @Override
     @GetMapping
     public List<QuoteResponse> findAll(
             @AuthenticationPrincipal Jwt jwt,
@@ -48,6 +50,7 @@ public class QuoteController {
                 .toList();
     }
 
+    @Override
     @GetMapping("/{quoteId}")
     public QuoteResponse findById(
             @AuthenticationPrincipal Jwt jwt,
@@ -57,6 +60,7 @@ public class QuoteController {
         return QuoteResponse.from(quote);
     }
 
+    @Override
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public QuoteResponse create(
@@ -71,6 +75,7 @@ public class QuoteController {
         return QuoteResponse.from(quote);
     }
 
+    @Override
     @PatchMapping("/{quoteId}")
     public QuoteResponse update(
             @AuthenticationPrincipal Jwt jwt,
@@ -86,6 +91,7 @@ public class QuoteController {
         return QuoteResponse.from(quote);
     }
 
+    @Override
     @DeleteMapping("/{quoteId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
@@ -95,6 +101,7 @@ public class QuoteController {
         quoteService.delete(ownerId(jwt), quoteId);
     }
 
+    @Override
     @PatchMapping("/{quoteId}/status")
     public QuoteResponse changeStatus(
             @AuthenticationPrincipal Jwt jwt,
@@ -105,6 +112,7 @@ public class QuoteController {
         return QuoteResponse.from(quote);
     }
 
+    @Override
     @PostMapping("/{quoteId}/items")
     @ResponseStatus(HttpStatus.CREATED)
     public QuoteResponse addItem(
@@ -116,6 +124,7 @@ public class QuoteController {
         return QuoteResponse.from(quote);
     }
 
+    @Override
     @PatchMapping("/{quoteId}/items/reorder")
     public QuoteResponse reorderItems(
             @AuthenticationPrincipal Jwt jwt,
@@ -126,6 +135,7 @@ public class QuoteController {
         return QuoteResponse.from(quote);
     }
 
+    @Override
     @PatchMapping("/{quoteId}/items/{itemId}")
     public QuoteResponse updateItem(
             @AuthenticationPrincipal Jwt jwt,
@@ -137,6 +147,7 @@ public class QuoteController {
         return QuoteResponse.from(quote);
     }
 
+    @Override
     @DeleteMapping("/{quoteId}/items/{itemId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeItem(

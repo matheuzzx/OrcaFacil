@@ -5,6 +5,7 @@ import br.com.matheus.orcafacil.domain.customer.CustomerService;
 import br.com.matheus.orcafacil.domain.customer.web.dto.CustomerRequest;
 import br.com.matheus.orcafacil.domain.customer.web.dto.CustomerResponse;
 import br.com.matheus.orcafacil.domain.customer.web.dto.CustomerUpdateRequest;
+import br.com.matheus.orcafacil.openapi.CustomerApiDocs;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,10 +27,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
-public class CustomerController {
+public class CustomerController implements CustomerApiDocs {
 
     private final CustomerService customerService;
 
+    @Override
     @GetMapping
     public List<CustomerResponse> findAll(
             @AuthenticationPrincipal Jwt jwt,
@@ -44,6 +46,7 @@ public class CustomerController {
                 .toList();
     }
 
+    @Override
     @GetMapping("/{customerId}")
     public CustomerResponse findById(
             @AuthenticationPrincipal Jwt jwt,
@@ -53,6 +56,7 @@ public class CustomerController {
         return CustomerResponse.from(customer);
     }
 
+    @Override
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CustomerResponse create(
@@ -63,6 +67,7 @@ public class CustomerController {
         return CustomerResponse.from(customer);
     }
 
+    @Override
     @PatchMapping("/{customerId}")
     public CustomerResponse update(
             @AuthenticationPrincipal Jwt jwt,
@@ -73,6 +78,7 @@ public class CustomerController {
         return CustomerResponse.from(customer);
     }
 
+    @Override
     @PatchMapping("/{customerId}/deactivate")
     public CustomerResponse deactivate(
             @AuthenticationPrincipal Jwt jwt,
@@ -82,6 +88,7 @@ public class CustomerController {
         return CustomerResponse.from(customer);
     }
 
+    @Override
     @PatchMapping("/{customerId}/reactivate")
     public CustomerResponse reactivate(
             @AuthenticationPrincipal Jwt jwt,

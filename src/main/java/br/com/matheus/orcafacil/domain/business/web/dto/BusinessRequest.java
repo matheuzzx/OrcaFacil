@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record BusinessRequest(
+public record  BusinessRequest(
         @NotNull PersonType personType,
         @NotBlank @Size(max = 150) String displayName,
         @Size(max = 150) String legalName,
